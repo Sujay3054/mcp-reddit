@@ -1,50 +1,37 @@
 import os
 import praw
-from mcp.server.fastmcp import FastMCP, tools as mcp_tool
+from mcp.server.fastmcp import FastMCP, tools as mcp_tools
 from typing import Optional
 
-# NOTE: SECURITY RISK! Hardcoding sensitive credentials is not recommended.
-# These values MUST be replaced with your actual Reddit App credentials.
-# All credentials are now fully configured in the code:
-os.environ["REDDIT_CLIENT_ID"] = "qHe2K7tDiDG5q5fY_Nx41g"
-os.environ["REDDIT_CLIENT_SECRET"] = "9wSiBfuTU8g5g6wKd2Pi0iFkrgmenQ"
-os.environ["REDDIT_USER_AGENT"] = "python:futuregen:v1.0 (by /u/TinyFix8992)"
-os.environ["REDDIT_USERNAME"] = "TinyFix8992" 
-os.environ["REDDIT_PASSWORD"] = "alphaarise"
+# Environment variables
+os.environ["REDDIT_CLIENT_ID"] = "NXsjsThj6kjXzler1SocFQ"
+os.environ["REDDIT_CLIENT_SECRET"] = "XV7zZ3oqxokwT_jkcWQdcIfQcC-V-Q"
+os.environ["REDDIT_USER_AGENT"] = "python:futuregen:v1.0 (by u/Disastrous_Try_9312)"
+os.environ["REDDIT_REFRESH_TOKEN"] = "199388648303931-E6SOgxU7uZnSBEXVT81NDkE3NpLK-Q"
 
-# Initialize the Reddit API client (PRAW)
+# PRAW using refresh token
 reddit = praw.Reddit(
-    client_id=os.environ["REDDIT_CLIENT_ID"],
-    client_secret=os.environ["REDDIT_CLIENT_SECRET"],
-    user_agent=os.environ["REDDIT_USER_AGENT"],
-    username=os.environ["REDDIT_USERNAME"],
-    password=os.environ["REDDIT_PASSWORD"]
+    client_id=os.environ["REDDIT_CLIENT_ID"].strip(),
+    client_secret=os.environ["REDDIT_CLIENT_SECRET"].strip(),
+    refresh_token=os.environ["REDDIT_REFRESH_TOKEN"],
+    user_agent=os.environ["REDDIT_USER_AGENT"].strip()
 )
 
-# Initialize MCP server
-mcp = FastMCP("reddit-mcp-server")
-
-# ==================================================
-# REDDIT TOOLS (Code for tools remains the same)
-# ==================================================
+# MCP server must be global
+mcp = FastMCP("reddit-composio-server")
 
 @mcp.tool()
 def get_hot_posts(subreddit: str, limit: int = 5):
-    """
-    Get the hottest posts from a specified subreddit.
-    """
     posts = []
-    try:
-        for submission in reddit.subreddit(subreddit).hot(limit=limit):
-            posts.append({
-                "title": submission.title,
-                "url": submission.url,
-                "score": submission.score,
-                "author": str(submission.author)
-            })
-        return {"successful": True, "data": posts}
-    except Exception as e:
-        return {"successful": False, "error": str(e)}
+    for submission in reddit.subreddit(subreddit).hot(limit=limit):
+        posts.append({
+            "title": submission.title,
+            "url": submission.url,
+            "score": submission.score,
+            "author": str(submission.author)
+        })
+    return {"successful": True, "data": posts}
+
 
 @mcp.tool()
 def get_user_info(username: str):
@@ -423,23 +410,20 @@ def retrieve_specific_content(id: str):
 def search_across_subreddits(search_query: str, limit: int = 5, restrict_sr: bool = False, sort: str = 'relevance'):
     """
     Searches reddit for content (e.g., posts, comments) using a query across all of Reddit.
-    'restrict_sr' is typically set to False for an across-subreddit search.
+    'restrict_sr' is included in the signature but ignored in the PRAW call to prevent error.
     """
     results = []
     
-    # Set the search scope: Use the general search available via the 'all' subreddit
-    # The PRAW search method uses the 'restrict_sr' parameter to control scope
-    search_results = reddit.subreddit('all').search(
-        query=search_query,
-        sort=sort,
-        limit=limit,
-        syntax='lucene', # Recommended for advanced search queries
-        restrict_sr=restrict_sr # True restricts the search to the current context (subreddits)
-    )
-
     try:
+        # The fix is here: The search call NO LONGER includes the 'restrict_sr' argument
+        search_results = reddit.subreddit('all').search(
+            query=search_query,
+            sort=sort,
+            limit=limit,
+            syntax='lucene'
+        )
+
         for item in search_results:
-            # We only expect submissions (posts) from the subreddit search
             if hasattr(item, 'title'):
                 results.append({
                     "type": "post",
@@ -538,6 +522,136 @@ def get_user_comments(username: str, limit: int = 10):
         return {"successful": True, "data": comments}
     except Exception as e:
         return {"successful": False, "error": f"Failed to retrieve comments for {username}: {str(e)}"}
+
+@mcp.tool()
+def get_top_posts(subreddit: str, time_filter: str = 'day', limit: int = 10):
+    """
+    Retrieves the highest-scoring posts from a subreddit within a specified time frame (e.g., 'hour', 'week', 'all').
+    """
+    if time_filter not in ['hour', 'day', 'week', 'month', 'year', 'all']:
+        return {"successful": False, "error": "Invalid time_filter. Use 'day', 'week', 'month', 'year', or 'all'."}
+        
+    try:
+        posts = []
+        # PRAW method to access the 'top' listing
+        for submission in reddit.subreddit(subreddit).top(time_filter=time_filter, limit=limit):
+            posts.append({
+                "title": submission.title,
+                "id": submission.id,
+                "score": submission.score,
+                "time_filter": time_filter,
+                "author": str(submission.author)
+            })
+        return {"successful": True, "data": posts}
+    except Exception as e:
+        return {"successful": False, "error": f"Failed to retrieve top posts: {str(e)}"}
+
+@mcp.tool()
+def get_submission_details(submission_id: str):
+    """
+    Retrieves the complete metadata for a single post (submission) using its short ID (e.g., '1nrzroo').
+    """
+    try:
+        # PRAW method to access a submission by its short ID
+        submission = reddit.submission(submission_id)
+        
+        return {
+            "successful": True,
+            "data": {
+                "title": submission.title,
+                "subreddit": str(submission.subreddit),
+                "upvote_ratio": submission.upvote_ratio,
+                "num_comments": submission.num_comments,
+                "is_self": submission.is_self
+            },
+            "error": None
+        }
+    except Exception as e:
+        return {"successful": False, "error": f"Submission lookup failed: {str(e)}"}
+
+@mcp.tool()
+def vote_on_content(fullname: str, direction: int = 1):
+    """
+    Casts a vote on a Reddit submission (t3_) or comment (t1_) by its fullname.
+    'direction' must be: 1 (upvote), -1 (downvote), or 0 (remove vote).
+    """
+    try:
+        # PRAW handles both comments and submissions here:
+        thing = reddit.comment(fullname) if fullname.startswith('t1_') else reddit.submission(fullname)
+        
+        if direction == 1:
+            thing.upvote()
+        elif direction == -1:
+            thing.downvote()
+        elif direction == 0:
+            thing.clear_vote()
+        else:
+            return {"successful": False, "error": "Invalid direction. Must be 1, -1, or 0."}
+
+        return {"successful": True, "data": {"status": f"Vote of {direction} cast on {fullname}."}, "error": None}
+    except Exception as e:
+        return {"successful": False, "error": f"Voting failed: {str(e)}"}
+
+@mcp.tool()
+def vote_on_content(fullname: str, direction: int = 1):
+    """
+    Casts a vote on a Reddit submission (t3_) or comment (t1_) by its fullname.
+    'direction' must be: 1 (upvote), -1 (downvote), or 0 (remove vote).
+    """
+    try:
+        # PRAW handles both comments and submissions here:
+        thing = reddit.comment(fullname) if fullname.startswith('t1_') else reddit.submission(fullname)
+        
+        if direction == 1:
+            thing.upvote()
+        elif direction == -1:
+            thing.downvote()
+        elif direction == 0:
+            thing.clear_vote()
+        else:
+            return {"successful": False, "error": "Invalid direction. Must be 1, -1, or 0."}
+
+        return {"successful": True, "data": {"status": f"Vote of {direction} cast on {fullname}."}, "error": None}
+    except Exception as e:
+        return {"successful": False, "error": f"Voting failed: {str(e)}"}
+
+@mcp.tool()
+def search_subreddits(query: str, limit: int = 10):
+    """
+    Searches for and retrieves a list of subreddit communities (not posts) matching a query in their name or description.
+    """
+    try:
+        subreddits = []
+        # PRAW method to search for subreddits (communities)
+        for sub in reddit.subreddits.search(query, limit=limit):
+            subreddits.append({
+                "name": str(sub.display_name),
+                "subscribers": sub.subscribers,
+                "public_description": sub.public_description
+            })
+        return {"successful": True, "data": subreddits}
+    except Exception as e:
+        return {"successful": False, "error": f"Subreddit search failed: {str(e)}"}
+
+@mcp.tool()
+def get_redditor_trophies(username: str):
+    """
+    Retrieves the list of trophies and achievements awarded to a specified user. (Public data).
+    """
+    try:
+        user = reddit.redditor(username)
+        trophies = []
+        
+        # The fix is here: using getattr() to safely access attributes
+        for trophy in user.trophies():
+            trophies.append({
+                "name": getattr(trophy, 'name', 'N/A'),
+                "description": getattr(trophy, 'description', 'No description'),
+                "icon_url": getattr(trophy, 'icon_url', None) # This handles the missing attribute error
+            })
+        return {"successful": True, "data": trophies}
+    except Exception as e:
+        return {"successful": False, "error": f"Failed to retrieve trophies for {username}: {str(e)}"}
 
 if __name__ == "__main__":
     mcp.run()
