@@ -1,8 +1,8 @@
+
 import os
 import praw
 from mcp.server.fastmcp import FastMCP, tools as mcp_tools
 from typing import Optional
-
 # Environment variables
 os.environ["REDDIT_CLIENT_ID"] = "NXsjsThj6kjXzler1SocFQ"
 os.environ["REDDIT_CLIENT_SECRET"] = "XV7zZ3oqxokwT_jkcWQdcIfQcC-V-Q"
@@ -13,7 +13,7 @@ os.environ["REDDIT_REFRESH_TOKEN"] = "199388648303931-E6SOgxU7uZnSBEXVT81NDkE3Np
 reddit = praw.Reddit(
     client_id=os.environ["REDDIT_CLIENT_ID"].strip(),
     client_secret=os.environ["REDDIT_CLIENT_SECRET"].strip(),
-    refresh_token=os.environ["REDDIT_REFRESH_TOKEN"],
+    refresh_token=os.environ["REDDIT_REFRESH_TOKEN"].strip(),
     user_agent=os.environ["REDDIT_USER_AGENT"].strip()
 )
 
@@ -652,6 +652,114 @@ def get_redditor_trophies(username: str):
         return {"successful": True, "data": trophies}
     except Exception as e:
         return {"successful": False, "error": f"Failed to retrieve trophies for {username}: {str(e)}"}
+
+@mcp.tool()
+def get_my_gilded_content(limit: int = 10):
+    try:
+        gilded_items = []
+        for item in reddit.user.gilded(limit=limit):
+            gilded_items.append({
+                "type": "Submission" if item.fullname.startswith('t3') else "Comment",
+                "title": getattr(item, 'title', None),
+                "author": str(item.author),
+                "score": item.score,
+                "awards_count": item.total_awards_received
+            })
+        return {"successful": True, "data": gilded_items}
+    except Exception as e:
+        return {"successful": False, "error": f"Failed to retrieve gilded content: {str(e)}"}
+
+@mcp.tool()
+def get_my_account_info():
+    try:
+        user = reddit.user.me()
+        return {
+            "successful": True,
+            "data": {
+                "name": user.name,
+                "created_utc": user.created_utc,
+                "link_karma": user.link_karma,
+                "comment_karma": user.comment_karma
+            },
+            "error": ""
+        }
+    except Exception as e:
+        return {"successful": False, "error": str(e)}
+
+@mcp.tool()
+def get_my_saved_content(limit: int = 10):
+    try:
+        saved = []
+        for item in reddit.user.me().saved(limit=limit):
+            saved.append({
+                "type": "post" if hasattr(item, "title") else "comment",
+                "id": item.id,
+                "title": getattr(item, "title", None),
+                "body": getattr(item, "body", None),
+                "subreddit": str(item.subreddit),
+                "url": getattr(item, "url", None)
+            })
+        return {"successful": True, "data": saved, "error": ""}
+    except Exception as e:
+        return {"successful": False, "error": str(e)}
+
+@mcp.tool()
+def get_unread_messages(limit: int = 10):
+    try:
+        messages = []
+        for message in reddit.inbox.unread(limit=limit):
+            messages.append({
+                "author": str(message.author),
+                "subject": getattr(message, "subject", ""),
+                "body": getattr(message, "body", ""),
+                "id": message.id,
+                "created_utc": message.created_utc
+            })
+        return {"successful": True, "data": messages, "error": ""}
+    except Exception as e:
+        return {"successful": False, "error": str(e)}
+
+@mcp.tool()
+def mark_message_as_read(message_ids: list):
+    try:
+        for msg_id in message_ids:
+            reddit.inbox.message(msg_id).mark_read()
+        return {"successful": True, "data": {"status": "Messages marked as read"}, "error": ""}
+    except Exception as e:
+        return {"successful": False, "error": str(e)}
+
+@mcp.tool()
+def get_mod_queue(subreddit: str, limit: int = 10):
+    try:
+        queue_items = []
+        for item in reddit.subreddit(subreddit).mod.modqueue(limit=limit):
+            queue_items.append({
+                "id": item.id,
+                "type": "post" if hasattr(item, "title") else "comment",
+                "author": str(item.author),
+                "title": getattr(item, "title", None),
+                "body": getattr(item, "body", None),
+                "subreddit": str(item.subreddit)
+            })
+        return {"successful": True, "data": queue_items, "error": ""}
+    except Exception as e:
+        return {"successful": False, "error": str(e)}
+
+@mcp.tool()
+def get_subreddit_rules(subreddit: str):
+    try:
+        rules = []
+        for rule in reddit.subreddit(subreddit).rules:
+            rules.append({
+                "short_name": rule['short_name'],
+                "description": rule['description'],
+                "kind": rule['kind']
+            })
+        return {"successful": True, "data": rules, "error": ""}
+    except Exception as e:
+        return {"successful": False, "error": str(e)}
+
+
 
 if __name__ == "__main__":
     mcp.run()
