@@ -121,3 +121,11 @@ os.environ["REDDIT_CLIENT_SECRET"] = "rxSEa8e2uyFSK6cfrJVlAe_omhgsXQ"
 os.environ["REDDIT_USER_AGENT"] = "python:futuregen:v1.0 (by u/Striking_Economy698)"
 os.environ["REDDIT_REFRESH_TOKEN"] = "200334591410393-Uwlr-vfZ65KzOQGmmr2qCUV_TrT53w"
 
+
+
+### Running the Server
+
+```bash
+python reddit_server.py
+# The server is now running and ready to accept API calls.
+###Available Tools (API Endpoints)
