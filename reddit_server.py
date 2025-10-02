@@ -1,13 +1,12 @@
-
 import os
 import praw
 from mcp.server.fastmcp import FastMCP, tools as mcp_tools
 from typing import Optional
 # Environment variables
-os.environ["REDDIT_CLIENT_ID"] = "NXsjsThj6kjXzler1SocFQ"
-os.environ["REDDIT_CLIENT_SECRET"] = "XV7zZ3oqxokwT_jkcWQdcIfQcC-V-Q"
-os.environ["REDDIT_USER_AGENT"] = "python:futuregen:v1.0 (by u/Disastrous_Try_9312)"
-os.environ["REDDIT_REFRESH_TOKEN"] = "199388648303931-E6SOgxU7uZnSBEXVT81NDkE3NpLK-Q"
+os.environ["REDDIT_CLIENT_ID"] = "VoDq1m6w4nmuLk7oDUmN8Q"
+os.environ["REDDIT_CLIENT_SECRET"] = "rxSEa8e2uyFSK6cfrJVlAe_omhgsXQ"
+os.environ["REDDIT_USER_AGENT"] = "python:futuregen:v1.0 (by u/Striking_Economy698)"
+os.environ["REDDIT_REFRESH_TOKEN"] = "200334591410393-Uwlr-vfZ65KzOQGmmr2qCUV_TrT53w"
 
 # PRAW using refresh token
 reddit = praw.Reddit(
@@ -654,112 +653,292 @@ def get_redditor_trophies(username: str):
         return {"successful": False, "error": f"Failed to retrieve trophies for {username}: {str(e)}"}
 
 @mcp.tool()
-def get_my_gilded_content(limit: int = 10):
+def get_subreddit_rules(subreddit: str):
+    """
+    Retrieves the complete set of official rules for a specified subreddit.
+    Ideal for agents needing to verify content compliance.
+    """
     try:
-        gilded_items = []
-        for item in reddit.user.gilded(limit=limit):
-            gilded_items.append({
-                "type": "Submission" if item.fullname.startswith('t3') else "Comment",
-                "title": getattr(item, 'title', None),
-                "author": str(item.author),
-                "score": item.score,
-                "awards_count": item.total_awards_received
+        # PRAW method to access the rules listing and its data (which is a dictionary)
+        # The correct way to access the underlying rule data is to call the rules() method.
+        rules_data = reddit.subreddit(subreddit).rules()
+        
+        # The final rules list is often stored under the 'rules' key in the returned dictionary
+        rule_list = []
+        for rule in rules_data.get('rules', []):
+            rule_list.append({
+                "short_name": rule.get('short_name'),
+                "description": rule.get('description'),
+                "created_utc": rule.get('created_utc'),
+                "violation_reason": rule.get('violation_reason') # Using .get() is safe here
             })
-        return {"successful": True, "data": gilded_items}
+        
+        return {"successful": True, "data": rule_list, "error": None}
     except Exception as e:
-        return {"successful": False, "error": f"Failed to retrieve gilded content: {str(e)}"}
+        # PRAW raises exceptions for permissions issues (403) or not found errors
+        return {"successful": False, "data": {}, "error": f"Failed to retrieve rules for r/{subreddit}: {str(e)}"}
 
 @mcp.tool()
-def get_my_account_info():
+def get_subreddit_listings(subreddit: str, listing_type: str = 'hot', time_filter: Optional[str] = None, limit: int = 10):
+    """
+    Retrieves posts from a specified subreddit based on a listing type (hot, top, new, controversial, rising).
+    Supports time_filter ('day', 'week', 'all') for 'top' and 'controversial' listings.
+    """
+    listing_type = listing_type.lower()
+    if listing_type not in ['hot', 'top', 'new', 'rising', 'controversial']:
+        return {"successful": False, "error": "Invalid listing_type. Use 'hot', 'top', 'new', 'rising', or 'controversial'."}
+        
     try:
-        user = reddit.user.me()
+        sub = reddit.subreddit(subreddit)
+        
+        # Determine the correct PRAW method to call
+        if listing_type == 'hot':
+            submissions = sub.hot(limit=limit)
+        elif listing_type == 'new':
+            submissions = sub.new(limit=limit)
+        elif listing_type == 'rising':
+            submissions = sub.rising(limit=limit)
+        elif listing_type == 'top':
+            submissions = sub.top(time_filter=time_filter or 'day', limit=limit)
+        elif listing_type == 'controversial':
+            submissions = sub.controversial(time_filter=time_filter or 'day', limit=limit)
+        
+        posts = [{
+            "title": s.title, 
+            "id": s.id, 
+            "score": s.score, 
+            "author": str(s.author),
+            "listing_type": listing_type
+        } for s in submissions]
+        
+        return {"successful": True, "data": posts}
+    except Exception as e:
+        return {"successful": False, "error": f"Failed to retrieve {listing_type} posts for r/{subreddit}: {str(e)}"}
+
+@mcp.tool()
+def send_mod_mail(subreddit: str, subject: str, message: str):
+    """
+    Sends a message to the entire moderator team of a specified subreddit. 
+    Requires the authenticated user to be a moderator of the target subreddit.
+    """
+    try:
+        # PRAW method to send a message to the subreddit's moderation team
+        reddit.subreddit(subreddit).message(
+            subject=subject, 
+            message=message
+        )
+        return {"successful": True, "data": {"status": f"Modmail sent successfully to moderators of r/{subreddit}."}, "error": None}
+    except Exception as e:
+        return {"successful": False, "error": f"Failed to send modmail: {str(e)}"}
+
+@mcp.tool()
+def get_subreddit_sidebar(subreddit: str):
+    """
+    Retrieves the raw markdown content and description from a subreddit's sidebar.
+    """
+    try:
+        sub = reddit.subreddit(subreddit)
         return {
             "successful": True,
             "data": {
-                "name": user.name,
-                "created_utc": user.created_utc,
-                "link_karma": user.link_karma,
-                "comment_karma": user.comment_karma
+                "description_md": getattr(sub, 'description', None), # Markdown description
+                "public_description": getattr(sub, 'public_description', None), # Short public description
+                "subscribers": getattr(sub, 'subscribers', None)
             },
-            "error": ""
+            "error": None
         }
     except Exception as e:
-        return {"successful": False, "error": str(e)}
+        return {"successful": False, "error": f"Failed to retrieve sidebar content for r/{subreddit}: {str(e)}"}
 
 @mcp.tool()
-def get_my_saved_content(limit: int = 10):
+def get_subreddits_by_topic(topic: str, limit: int = 10):
+    """
+    Retrieves a list of subreddit communities based on a specific topic or theme.
+    """
     try:
-        saved = []
-        for item in reddit.user.me().saved(limit=limit):
-            saved.append({
-                "type": "post" if hasattr(item, "title") else "comment",
-                "id": item.id,
-                "title": getattr(item, "title", None),
-                "body": getattr(item, "body", None),
-                "subreddit": str(item.subreddit),
-                "url": getattr(item, "url", None)
+        subreddits = []
+        # PRAW method to get subreddits recommended based on a query
+        for sub in reddit.subreddits.search(topic, limit=limit):
+            subreddits.append({
+                "name": str(sub.display_name),
+                "subscribers": sub.subscribers,
+                "public_description": sub.public_description
             })
-        return {"successful": True, "data": saved, "error": ""}
+        return {"successful": True, "data": subreddits}
     except Exception as e:
-        return {"successful": False, "error": str(e)}
+        return {"successful": False, "error": f"Failed to search subreddits by topic: {str(e)}"}
+
+@mcp.tool()
+def get_moderators(subreddit: str):
+    """
+    Retrieves the complete list of usernames for all moderators of a specified subreddit.
+    """
+    try:
+        # PRAW method to get the list of moderators
+        mod_list = [str(mod) for mod in reddit.subreddit(subreddit).moderator()]
+        
+        return {
+            "successful": True,
+            "data": {"moderators": mod_list, "count": len(mod_list)},
+            "error": None
+        }
+    except Exception as e:
+        return {"successful": False, "error": f"Failed to retrieve moderators for r/{subreddit}: {str(e)}"}
+
+@mcp.tool()
+def get_user_flair(subreddit: str, username: str):
+    """
+    Retrieves the flair text and CSS class assigned to a specific user in a given subreddit.
+    """
+    try:
+        # PRAW returns an iterable (or a list of one dictionary)
+        flair_generator = reddit.subreddit(subreddit).flair(username=username)
+        
+        # Convert the single result from the generator into a dictionary (the safe way)
+        flair_data_list = list(flair_generator)
+        
+        if not flair_data_list:
+             return {"successful": True, "data": {"status": "User has no flair set in this subreddit."}, "error": None}
+
+        # The first item in the list is the data dictionary we need
+        flair_dict = flair_data_list[0]
+        
+        return {
+            "successful": True,
+            "data": {
+                # Use .get() method to safely handle missing keys in the dictionary
+                "username": flair_dict.get('user'),
+                "flair_text": flair_dict.get('flair_text'),
+                "flair_css_class": flair_dict.get('flair_css_class')
+            },
+            "error": None
+        }
+
+    except Exception as e:
+        return {"successful": False, "data": {}, "error": f"Failed to retrieve flair for {username} in r/{subreddit}: {str(e)}"}
+
+@mcp.tool()
+def get_gilded_content(subreddit: str, limit: int = 10):
+    """
+    Retrieves a list of posts that have received awards (gilding) by filtering top posts 
+    on the specified subreddit. This is a more stable method than the direct .gilded() call.
+    """
+    try:
+        gilded_items = []
+        # Stabilized method: Get the top posts and filter for awarded items (PRAW handles the filtering implicitly)
+        for item in reddit.subreddit(subreddit).top(limit=limit, time_filter='all'):
+            if item.total_awards_received > 0:
+                gilded_items.append({
+                    "type": "Submission",
+                    "title": item.title,
+                    "author": str(item.author),
+                    "score": item.score,
+                    "awards_count": item.total_awards_received
+                })
+        
+        return {"successful": True, "data": gilded_items, "error": None}
+        
+    except Exception as e:
+        # Catch exceptions like 'SubredditNotFound'
+        return {"successful": False, "error": f"Failed to retrieve gilded content: {str(e)}"}
+
+@mcp.tool()
+def list_multireddits():
+    """
+    Retrieves a list of all Multireddits (Custom Feeds) created by the authenticated user.
+    """
+    try:
+        multis = []
+        # PRAW method to access the authenticated user's multireddit list
+        for multi in reddit.user.multireddits():
+            multis.append({
+                "name": multi.display_name,
+                "path": multi.path,
+                "visibility": multi.visibility,
+                "subreddits": [str(sub) for sub in multi.subreddits]
+            })
+        return {"successful": True, "data": multis, "error": None}
+    except Exception as e:
+        return {"successful": False, "error": f"Failed to retrieve multireddits: {str(e)}"}
+
+@mcp.tool()
+def get_multireddit_posts(multireddit_name: str, limit: int = 10):
+    """
+    Retrieves hot posts from a specific Multireddit (Custom Feed).
+    """
+    try:
+        posts = []
+        # PRAW method to access a multireddit's submissions
+        multi = reddit.multireddit(reddit.user.me().name, multireddit_name)
+        
+        for submission in multi.hot(limit=limit):
+            posts.append({
+                "title": submission.title,
+                "id": submission.id,
+                "subreddit": str(submission.subreddit),
+                "score": submission.score
+            })
+        return {"successful": True, "data": posts, "error": None}
+    except Exception as e:
+        return {"successful": False, "error": f"Failed to retrieve posts from multireddit '{multireddit_name}': {str(e)}"}
+
+@mcp.tool()
+def get_blocked_users():
+    """
+    Retrieves the complete list of users the authenticated account has blocked.
+    """
+    try:
+        blocked_users = []
+        # PRAW method to access the authenticated user's blocked list
+        for user in reddit.user.blocked():
+            blocked_users.append({
+                "username": str(user.name),
+                "id": str(user.id)
+            })
+        return {"successful": True, "data": {"blocked_users": blocked_users, "count": len(blocked_users)}, "error": None}
+    except Exception as e:
+        return {"successful": False, "error": f"Failed to retrieve blocked users: {str(e)}"}
+
+@mcp.tool()
+def get_moderated_subs(limit: int = 25):
+    """
+    Retrieves a list of all subreddits the authenticated user is a moderator of.
+    """
+    try:
+        subs = []
+        # Final, stable fix: Access the moderator_of generator directly from the current user object
+        for sub in reddit.user.me().moderator_of(limit=limit):
+            subs.append({
+                "name": str(sub.display_name),
+                "subscribers": sub.subscribers,
+                "is_moderator": True
+            })
+        return {"successful": True, "data": subs, "error": None}
+    except Exception as e:
+        # This will now catch the AttributeError if the PRAW object fails to load entirely.
+        return {"successful": False, "error": f"Failed to retrieve moderated subreddits: {str(e)}"}
 
 @mcp.tool()
 def get_unread_messages(limit: int = 10):
+    """
+    Retrieves a list of unread messages, replies, and modmail for the authenticated user.
+    """
     try:
         messages = []
-        for message in reddit.inbox.unread(limit=limit):
+        # PRAW method to access the authenticated user's unread inbox
+        for item in reddit.inbox.unread(limit=limit):
             messages.append({
-                "author": str(message.author),
-                "subject": getattr(message, "subject", ""),
-                "body": getattr(message, "body", ""),
-                "id": message.id,
-                "created_utc": message.created_utc
+                "type": item.fullname.split('_')[0], # t1=comment, t4=message
+                "subject": getattr(item, 'subject', 'N/A'),
+                "author": str(getattr(item, 'author', 'Reddit')),
+                "is_new": True,
+                "text_preview": getattr(item, 'body', getattr(item, 'subject', ''))[:100]
             })
-        return {"successful": True, "data": messages, "error": ""}
+            
+        return {"successful": True, "data": messages, "error": None}
     except Exception as e:
-        return {"successful": False, "error": str(e)}
-
-@mcp.tool()
-def mark_message_as_read(message_ids: list):
-    try:
-        for msg_id in message_ids:
-            reddit.inbox.message(msg_id).mark_read()
-        return {"successful": True, "data": {"status": "Messages marked as read"}, "error": ""}
-    except Exception as e:
-        return {"successful": False, "error": str(e)}
-
-@mcp.tool()
-def get_mod_queue(subreddit: str, limit: int = 10):
-    try:
-        queue_items = []
-        for item in reddit.subreddit(subreddit).mod.modqueue(limit=limit):
-            queue_items.append({
-                "id": item.id,
-                "type": "post" if hasattr(item, "title") else "comment",
-                "author": str(item.author),
-                "title": getattr(item, "title", None),
-                "body": getattr(item, "body", None),
-                "subreddit": str(item.subreddit)
-            })
-        return {"successful": True, "data": queue_items, "error": ""}
-    except Exception as e:
-        return {"successful": False, "error": str(e)}
-
-@mcp.tool()
-def get_subreddit_rules(subreddit: str):
-    try:
-        rules = []
-        for rule in reddit.subreddit(subreddit).rules:
-            rules.append({
-                "short_name": rule['short_name'],
-                "description": rule['description'],
-                "kind": rule['kind']
-            })
-        return {"successful": True, "data": rules, "error": ""}
-    except Exception as e:
-        return {"successful": False, "error": str(e)}
-
-
+        # This requires user login (which is currently problematic), but the tool is useful.
+        return {"successful": False, "error": f"Failed to retrieve unread messages: {str(e)}"}
 
 if __name__ == "__main__":
     mcp.run()
