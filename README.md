@@ -71,6 +71,7 @@ reddit = praw.Reddit(
     refresh_token=os.environ["REDDIT_REFRESH_TOKEN"],
     user_agent=os.environ["REDDIT_USER_AGENT"]
 )
+'''
 
 Running the Server
 Start the FastMCP server:
@@ -136,4 +137,5 @@ The server may occasionally hit Reddit API rate limits:
 reddit is blocking your account because of too many actions
 
 Operations that create, edit, or vote on content may fail temporarily until the block is lifted.
+
 
