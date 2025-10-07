@@ -1,0 +1,495 @@
+{
+  "reddit": {
+    "description": "A toolkit for interacting with Reddit — create posts, manage comments, retrieve subreddit info, and more via the Reddit MCP Server.",
+    "tools": [
+      {
+        "name": "get_hot_posts",
+        "description": "Retrieve the hottest posts from a subreddit.",
+        "parameters": {
+          "subreddit": "string - The subreddit to retrieve posts from",
+          "limit": "int (optional, default=5) - Maximum number of posts to return"
+        }
+      },
+      {
+        "name": "get_user_info",
+        "description": "Fetch basic information about a Reddit user.",
+        "parameters": {
+          "username": "string - The Reddit username to retrieve info for"
+        }
+      },
+      {
+        "name": "create_reddit_post",
+        "description": "Create a text ('self') or link post ('link') on a subreddit.",
+        "parameters": {
+          "subreddit": "string - The subreddit to post in",
+          "title": "string - Title of the post",
+          "kind": "string ('self' or 'link') - Type of post",
+          "text": "string (optional) - Text content for 'self' posts",
+          "url": "string (optional) - URL for 'link' posts",
+          "flair_id": "string (optional) - Flair ID to assign to the post"
+        }
+      },
+      {
+        "name": "delete_reddit_comment",
+        "description": "Delete a Reddit comment by its ID (t1_...).",
+        "parameters": {
+          "id": "string - The ID of the comment to delete"
+        }
+      },
+      {
+        "name": "delete_reddit_post",
+        "description": "Delete a Reddit post by its ID (t3_...).",
+        "parameters": {
+          "id": "string - The ID of the post to delete"
+        }
+      },
+      {
+        "name": "edit_reddit_content",
+        "description": "Edit your own Reddit comment (t1_) or text post (t3_).",
+        "parameters": {
+          "thing_id": "string - The ID of the comment or post to edit",
+          "text": "string - New text content"
+        }
+      },
+      {
+        "name": "get_link_flair",
+        "description": "Fetch available post flairs for a subreddit.",
+        "parameters": {
+          "subreddit": "string - The subreddit to retrieve flairs from"
+        }
+      },
+      {
+        "name": "post_reddit_comment",
+        "description": "Post a comment under a submission (t3_) or another comment (t1_).",
+        "parameters": {
+          "thing_id": "string - ID of the submission or comment to reply to",
+          "text": "string - Text content of the comment"
+        }
+      },
+      {
+        "name": "retrieve_reddit_posts",
+        "description": "Retrieve current hot posts from a subreddit.",
+        "parameters": {
+          "subreddit": "string - Name of the subreddit",
+          "size": "int (optional, default=5) - Number of posts to retrieve"
+        }
+      },
+      {
+        "name": "retrieve_specific_content",
+        "description": "Retrieve detailed information for a specific Reddit post (t3_) or comment (t1_) using its fullname ID.",
+        "parameters": {
+          "id": "string - Fullname ID of the content (t3_ or t1_)"
+        }
+      },
+      {
+        "name": "search_across_subreddits",
+        "description": "Search Reddit globally for posts using a query string.",
+        "parameters": {
+          "search_query": "string - Text query to search for",
+          "limit": "int (optional, default=5) - Maximum number of results",
+          "restrict_sr": "boolean (optional, ignored)",
+          "sort": "string (optional, default='relevance') - Sorting method"
+        }
+      },
+      {
+        "name": "get_subreddit_details",
+        "description": "Retrieve description, subscribers, and creation date for a subreddit.",
+        "parameters": {
+          "subreddit": "string - Name of the subreddit"
+        }
+      },
+      {
+        "name": "send_private_message",
+        "description": "Send a private message to a Reddit user.",
+        "parameters": {
+          "recipient": "string - Username of the recipient",
+          "subject": "string - Subject line",
+          "message": "string - Message content"
+        }
+      },
+      {
+        "name": "get_new_submissions",
+        "description": "Retrieve newest posts from a subreddit in chronological order.",
+        "parameters": {
+          "subreddit": "string - Name of the subreddit",
+          "limit": "int (optional, default=5) - Number of posts to retrieve"
+        }
+      },
+      {
+        "name": "get_user_comments",
+        "description": "Retrieve the most recent comments made by a specified user.",
+        "parameters": {
+          "username": "string - Reddit username",
+          "limit": "int (optional, default=10) - Number of comments to retrieve"
+        }
+      },
+      {
+        "name": "get_top_posts",
+        "description": "Retrieves the highest-scoring posts from a subreddit within a specified time frame (e.g., 'hour', 'day', 'week', 'month', 'year', 'all').",
+        "parameters": {
+          "subreddit": "string - The subreddit to retrieve top posts from",
+          "time_filter": "string (optional, default 'day') - The time frame to filter top posts by",
+          "limit": "int (optional, default 10) - The maximum number of posts to retrieve"
+        }
+      },
+      {
+        "name": "get_submission_details",
+        "description": "Retrieves the complete metadata for a single post (submission) using its short ID (e.g., '1nrzroo').",
+        "parameters": {
+          "submission_id": "string - The ID of the submission to retrieve details for"
+        }
+      },
+      {
+        "name": "vote_on_content",
+        "description": "Casts a vote on a Reddit submission (t3_) or comment (t1_) by its fullname. 'direction' must be 1 (upvote), -1 (downvote), or 0 (remove vote).",
+        "parameters": {
+          "fullname": "string - The fullname ID of the content to vote on",
+          "direction": "int (optional, default 1) - 1 for upvote, -1 for downvote, 0 to remove vote"
+        }
+      },
+      {
+        "name": "search_subreddits",
+        "description": "Searches for subreddit communities matching a query in their name or description.",
+        "parameters": {
+          "query": "string - The search query for subreddits",
+          "limit": "int (optional, default 10) - Maximum number of subreddits to return"
+        }
+      },
+      {
+        "name": "get_redditor_trophies",
+        "description": "Retrieves the list of trophies and achievements awarded to a specified user (public data).",
+        "parameters": {
+          "username": "string - The Reddit username to retrieve trophies for"
+        }
+      },
+      {
+        "name": "get_subreddit_rules",
+        "description": "Retrieves the complete set of official rules for a specified subreddit.",
+        "parameters": {
+          "subreddit": "string - The subreddit to retrieve rules for"
+        }
+      },
+      {
+        "name": "get_subreddit_listings",
+        "description": "Retrieves posts from a subreddit based on a listing type (hot, top, new, controversial, rising). Supports time_filter for 'top' and 'controversial'.",
+        "parameters": {
+          "subreddit": "string - The subreddit to retrieve posts from",
+          "listing_type": "string (optional, default 'hot') - Type of listing: 'hot', 'top', 'new', 'rising', 'controversial'",
+          "time_filter": "string (optional) - Time filter: 'day', 'week', 'all' (only for 'top' or 'controversial')",
+          "limit": "int (optional, default 10) - Number of posts to retrieve"
+        }
+      },
+      {
+        "name": "send_mod_mail",
+        "description": "Sends a message to the moderator team of a subreddit. Requires the authenticated user to be a moderator.",
+        "parameters": {
+          "subreddit": "string - The subreddit to send mod mail to",
+          "subject": "string - Subject of the message",
+          "message": "string - Content of the message"
+        }
+      },
+      {
+        "name": "get_subreddit_sidebar",
+        "description": "Retrieves the raw markdown content and description from a subreddit's sidebar.",
+        "parameters": {
+          "subreddit": "string - The subreddit to retrieve sidebar content from"
+        }
+      },
+      {
+        "name": "get_subreddits_by_topic",
+        "description": "Retrieves a list of subreddit communities based on a specific topic or theme.",
+        "parameters": {
+          "topic": "string - Topic or theme to search for subreddits",
+          "limit": "int (optional, default 10) - Maximum number of subreddits to return"
+        }
+      },
+      {
+        "name": "get_moderators",
+        "description": "Retrieves the complete list of usernames for all moderators of a specified subreddit.",
+        "parameters": {
+          "subreddit": "string - The subreddit to retrieve moderators from"
+        }
+      },
+      {
+        "name": "get_user_flair",
+        "description": "Retrieves the flair text and CSS class assigned to a specific user in a given subreddit.",
+        "parameters": {
+          "subreddit": "string - The subreddit to retrieve flair from",
+          "username": "string - The Reddit username whose flair will be retrieved"
+        }
+      },
+      {
+        "name": "get_gilded_content",
+        "description": "Retrieves a list of posts that have received awards (gilding) on the specified subreddit.",
+        "parameters": {
+          "subreddit": "string - The subreddit to retrieve gilded content from",
+          "limit": "int (optional, default 10) - Maximum number of gilded posts to retrieve"
+        }
+      },
+      {
+        "name": "list_multireddits",
+        "description": "Retrieves a list of all Multireddits (Custom Feeds) created by the authenticated user.",
+        "parameters": {}
+      },
+      {
+        "name": "get_multireddit_posts",
+        "description": "Retrieves hot posts from a specific Multireddit (Custom Feed).",
+        "parameters": {
+        "multireddit_name": "string - The name of the Multireddit to retrieve posts from",
+        "limit": "int (optional, default 10) - Maximum number of posts to retrieve"
+        }
+      },
+      {
+        "name": "get_blocked_users",
+        "description": "Retrieves the complete list of users the authenticated account has blocked.",
+        "parameters": {}
+      },
+      {
+        "name": "get_moderated_subs",
+        "description": "Retrieves a list of all subreddits the authenticated user is a moderator of.",
+        "parameters": {
+        "limit": "int (optional, default 25) - Maximum number of subreddits to retrieve"
+        }
+      },
+      {
+        "name": "get_unread_messages",
+        "description": "Retrieves a list of unread messages, replies, and modmail for the authenticated user.",
+        "parameters": {
+        "limit": "int (optional, default 10) - Maximum number of messages to retrieve"
+        }
+      },
+      {
+        "name": "get_subreddit_traffic_stats",
+        "description": "Retrieves traffic statistics (uniques and pageviews) for a subreddit. Requires moderator permissions with 'traffic' access.",
+        "parameters": {
+        "subreddit": "string - The subreddit to retrieve traffic statistics for"
+        }
+      },
+      {
+        "name": "create_post_collection",
+        "description": "Creates a new post collection in a subreddit. Requires moderator permissions.",
+        "parameters": {
+        "subreddit": "string - The subreddit to create the collection in",
+        "title": "string - The title of the new post collection",
+        "description": "string (optional) - A description of the collection"
+        }
+      },
+      {
+        "name": "add_post_to_collection",
+        "description": "Adds a post to an existing collection. Requires moderator permissions.",
+        "parameters": {
+        "collection_id": "string - The ID of the target post collection",
+        "post_id": "string - The full t3_ ID of the post to add"
+        }
+      },
+      {
+        "name": "sticky_post",
+        "description": "Stickies (pins) or un-stickies a post to the top of the subreddit. Requires moderator permissions.",
+        "parameters": {
+        "post_id": "string - The ID of the post to sticky or un-sticky",
+        "state": "bool (optional, default True) - True to sticky, False to un-sticky",
+        "slot": "int (optional, default 1) - Sticky slot position (1 or 2)"
+        }
+      },
+      {
+        "name": "add_wiki_editor",
+        "description": "Adds a user as an approved editor for the subreddit's wiki. Requires 'modwiki' permissions.",
+        "parameters": {
+        "subreddit": "string - The subreddit to modify",
+        "username": "string - The username to grant wiki editing rights"
+        }
+      },
+      {
+        "name": "list_approved_submitters",
+        "description": "Retrieves the list of approved submitters (contributors) for a subreddit. Requires moderator permissions.",
+        "parameters": {
+        "subreddit": "string - The subreddit to retrieve approved submitters from"
+        }
+      },
+      {
+        "name": "list_wiki_pages",
+        "description": "Retrieves a list of all wiki pages in a subreddit. Requires the subreddit's wiki to be enabled.",
+        "parameters": {
+        "subreddit": "string - The subreddit to retrieve wiki pages from"
+        }
+      },
+      {
+        "name": "get_moderation_log",
+        "description": "Retrieves the moderation log for a subreddit. Requires moderator permissions with 'log' access.",
+        "parameters": {
+        "subreddit": "string - The subreddit to fetch moderation logs from",
+        "limit": "int (optional, default 25) - Maximum number of log entries to retrieve"
+        }
+      },
+      {
+        "name": "list_muted_users",
+        "description": "Retrieves a list of users muted from the subreddit's modmail. Requires moderator permissions.",
+        "parameters": {
+        "subreddit": "string - The subreddit to retrieve muted users from"
+        }
+      },
+      {
+        "name": "get_controversial_posts",
+        "description": "Retrieves controversial posts from a subreddit within a specified time frame.",
+        "parameters": {
+        "subreddit": "string - The subreddit to fetch controversial posts from",
+        "time_filter": "string (optional, default 'day') - One of ['hour', 'day', 'week', 'month', 'year', 'all']",
+        "limit": "int (optional, default 10) - Maximum number of posts to retrieve"
+        }
+      },
+      {
+        "name": "list_user_friends",
+        "description": "Retrieves the list of friends for the currently authenticated user.",
+        "parameters": {}
+      },
+      {
+        "name": "get_trending_posts",
+        "description": "Retrieves the current trending posts from across all of Reddit (from r/popular).",
+        "parameters": {
+        "limit": "int (optional, default 10) - Maximum number of trending posts to retrieve"
+        }
+      },
+      {
+        "name": "get_my_upvoted_content",
+        "description": "Retrieves a list of posts and comments the authenticated user has upvoted.",
+        "parameters": {
+        "limit": "int (optional, default 25) - Maximum number of upvoted items to retrieve"
+        }
+      },
+      {
+        "name": "get_my_downvoted_content",
+        "description": "Retrieves a list of posts and comments the authenticated user has downvoted.",
+        "parameters": {
+        "limit": "int (optional, default 25) - Maximum number of downvoted items to retrieve"
+        }
+      },
+      {
+        "name": "get_reddit_age",
+        "description": "Calculates the age of a Reddit account or a subreddit.",
+        "parameters": {
+        "name": "string - The name of the Reddit user or subreddit",
+        "item_type": "string - Either 'user' or 'subreddit'"
+        }
+      },
+      {
+        "name": "get_user_gilded_content",
+        "description": "Retrieves a list of posts and comments by a user that have received awards.",
+        "parameters": {
+        "username": "string - The Reddit username to retrieve gilded content for",
+        "limit": "int (optional, default 25) - Maximum number of gilded items to retrieve"
+        }
+      },
+      {
+        "name": "get_user_follower_count",
+        "description": "Retrieves the number of followers for a given Reddit user.",
+        "parameters": {
+        "username": "string - The Reddit username whose follower count will be retrieved"
+        }
+      },
+      {
+        "name": "get_best_feed",
+        "description": "Retrieves posts from the authenticated user's personalized 'Best' front page feed.",
+        "parameters": {
+        "limit": "int (optional, default 25) - Maximum number of posts to retrieve"
+        }
+      },
+      {
+        "name": "list_modmail_conversations",
+        "description": "Retrieves recent modmail conversations for a subreddit. Requires moderator permissions.",
+        "parameters": {
+        "subreddit": "string - The subreddit to fetch modmail conversations from",
+        "limit": "int (optional, default 10) - Maximum number of conversations to retrieve"
+        }
+      },
+      {
+        "name": "ignore_reports_on_content",
+        "description": "Ignores reports on a post or comment, clearing it from the mod queue. Requires moderator permissions.",
+        "parameters": {
+        "content_id": "string - The ID of the post or comment to ignore reports on"
+        }
+      },
+      {
+        "name": "delete_flair_template",
+        "description": "Deletes a link flair template from a subreddit. Requires 'modflair' permissions.",
+        "parameters": {
+        "subreddit": "string - The subreddit from which to delete the flair template",
+        "flair_template_id": "string - The ID of the flair template to delete"
+        }
+      },
+      {
+        "name": "crosspost_submission",
+        "description": "Crossposts an existing submission to a different subreddit.",
+        "parameters": {
+        "post_id": "string - The ID of the post to crosspost",
+        "subreddit": "string - The subreddit to crosspost to",
+        "title": "string (optional) - Custom title for the crosspost"
+        }
+      },
+      {
+        "name": "reply_to_modmail_conversation",
+        "description": "Replies to a modmail conversation. Requires moderator permissions.",
+        "parameters": {
+        "conversation_id": "string - The ID of the modmail conversation to reply to",
+        "body": "string - The message body of the reply",
+        "is_author_hidden": "bool (optional, default False) - Whether to hide the author and reply as the subreddit"
+        }
+      },
+      {
+        "name": "get_my_notifications",
+        "description": "Retrieves notifications from the authenticated user's inbox.",
+        "parameters": {
+        "filter_type": "string (optional, default 'unread') - One of ['all', 'unread', 'comment_replies', 'post_replies', 'mentions', 'messages']",
+        "limit": "int (optional, default 10) - Maximum number of notifications to retrieve"
+        }
+      },
+      {
+        "name": "find_communities_by_topic",
+        "description": "Finds and retrieves a list of subreddit communities based on a specific topic.",
+        "parameters": {
+        "topic": "string - The topic to search communities for",
+        "limit": "int (optional, default 10) - Maximum number of subreddits to retrieve"
+        }
+      },
+      {
+        "name": "get_community_age_rating",
+        "description": "Checks if a subreddit is marked as 'over 18' (NSFW) and returns its age classification.",
+        "parameters": {
+        "subreddit": "string - The subreddit to check age rating for"
+        }
+      },
+      {
+        "name": "update_subreddit_rule",
+        "description": "Updates an existing rule in a subreddit identified by its short name. Requires 'modconfig' permissions.",
+        "parameters": {
+          "subreddit": "string - The name of the subreddit containing the rule",
+          "short_name": "string - The short name of the rule to update",
+          "new_description": "string (optional) - The new description for the rule"
+        }
+      },
+      {
+        "name": "get_rising_posts",
+        "description": "Retrieves posts from the 'Rising' feed of a subreddit.",
+        "parameters": {
+          "subreddit": "string - The subreddit to fetch rising posts from",
+          "limit": "int (optional, default 10) - Maximum number of posts to retrieve"
+        }
+      },
+      {
+        "name": "find_best_answer_in_post",
+        "description": "Finds the most likely 'answer' in a Reddit post's comment section using different strategies.",
+        "parameters": {
+          "post_id": "string - The Reddit post ID (without 't3_')",
+          "strategy": "string (optional, default 'top_voted') - Strategy to find the answer ('top_voted', 'op_reply', 'mod_reply')"
+        }
+      },
+      {
+        "name": "get_random_post",
+        "description": "Retrieves a random post from the specified subreddit. Returns a message if random mode is not supported.",
+        "parameters": {
+          "subreddit": "string - The subreddit from which to fetch a random post"
+        }
+      }
+    ]
+  }
+}
+

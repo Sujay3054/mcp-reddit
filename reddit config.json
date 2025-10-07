@@ -1,0 +1,31 @@
+{
+  "mcpServers": {
+    "reddit": {
+      "command": "bash",
+      "args": ["-c", "cd /app/LocalMCPs/reddit-mcp && uv run reddit_server.py"],
+      "type": "stdio",
+      "env": {
+        "REDDIT_CLIENT_ID": {
+          "source": "project",
+          "collection_method": "none",
+          "env_var": "REDDIT_CLIENT_ID"
+        },
+        "REDDIT_CLIENT_SECRET": {
+          "source": "project",
+          "collection_method": "none",
+          "env_var": "REDDIT_CLIENT_SECRET"
+        },
+        "REDDIT_USER_AGENT": {
+          "source": "project",
+          "collection_method": "none",
+          "env_var": "REDDIT_USER_AGENT"
+        },
+        "REDDIT_REFRESH_TOKEN": {
+          "source": "user",
+          "collection_method": "both",
+          "oauth_url": "/api/v1/common/oauth/reddit/start"
+        }
+      }
+    }
+  }
+}
