@@ -37,7 +37,7 @@ reddit = praw.Reddit(
 )
 
 # MCP server must be global
-mcp = FastMCP("reddit-composio-server")
+mcp = FastMCP("reddit")
 
 from typing import Optional
 
