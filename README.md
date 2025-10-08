@@ -55,6 +55,28 @@ Set the following environment variables for Reddit API authentication:
 | `REDDIT_USER_AGENT` | Descriptive user agent (e.g., `python:futuregen:v1.0 (by u/YourUsername)`). |
 | `REDDIT_REFRESH_TOKEN` | PRAW refresh token for long-term script access. |
 
+
+#### Detailed Instructions to Get Tokens
+
+1.  **Create a Reddit App:**
+    * Log in to Reddit and go to the **[Reddit App Preferences page](https://www.reddit.com/prefs/apps)**.
+    * Click **"create an app..."**.
+    * Select **`script`** as the application type.
+    * Set the **`name`** (e.g., "MCP-Server").
+    * Set **`redirect uri`** to a dummy URL, such as `http://localhost:8080` (this is crucial for PRAW authentication).
+    * Click **"create app"**.
+
+2.  **Retrieve Client ID and Client Secret:**
+    * On the resulting page, the **Client ID** is the alphanumeric string under the application name (e.g., `VoDq1m6w4nmuLk7oDUmN8Q`).
+    * The **Client Secret** is the string next to the label `secret` (e.g., `rxSEa8e2uyFSK6cfrJVlAe_omhgsXQ`).
+
+3.  **Generate a Refresh Token (Requires PRAW helper script):**
+    * The **Refresh Token** is required for perpetual, script-based access. PRAW provides a helper to generate this token.
+    * You must run a one-time script (or use a dedicated PRAW tool) that initiates the OAuth flow in a web browser.
+    * The script will ask for the **Client ID**, **Client Secret**, and redirect you to a Reddit authorization page.
+    * After authorizing, the script will print the **Refresh Token**.
+  
+
 **Example PRAW Initialization:**
 ```python
 import os
@@ -137,6 +159,7 @@ The server may occasionally hit Reddit API rate limits:
 reddit is blocking your account because of too many actions
 
 Operations that create, edit, or vote on content may fail temporarily until the block is lifted.
+
 
 
 
